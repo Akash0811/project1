@@ -4,7 +4,7 @@
     Book
 {% endblock %}
 
-{% block body %}
+{% block main %}
     <h1>Book Details</h1>
 
     <ul>
@@ -14,17 +14,22 @@
         <li>ISBN: {{ book.isbn }}</li>
     </ul>
 
-    <h2>Reviews</h2>
+    <h2>Goodreads Reviews</h2>
     <ul>
-        {% for item in reviews %}
-            <ul>
-            <li>{{ item.rating }}</li>
-            <li>{{ item.review }}</li>
-            </ul>
-        {% else %}
-            <li>No reviews.</li>
-        {% endfor %}
+          <li>{{ reviews.average_score }}</li>
+          <li>{{ reviews.review_count }}</li>
     </ul>
+
+    <h2>User Reviews</h2>
+    <ul>
+      {% for rev in user_reviews %}
+          <li>{{ rev.rating }} :::  
+          {{ rev.review }}</li>
+      {% else %}
+          <li>No reviews</li>
+      {% endfor %}
+    </ul>
+
     <form action="/submission" method="post">
         <div class="form-group">
             <select class="form-control" name="isbn">

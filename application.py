@@ -183,29 +183,39 @@ def book(book_id):
     if book is None:
         return apology("No book found" , 400)
 
-    reviews = lookup(book["isbn"])
-    if not reviews:
-        res = requests.get("https://www.goodreads.com/book/review_counts.json", params={"key": "KEY", "isbns": "9781632168146"})
-        print(res)
-        return (res.json())
+    reviews = lookup(str(book["isbn"]))
+    user_reviews = db.execute("SELECT rating , review FROM reviews WHERE book_id = :book_id",
+                    {"book_id": book_id}).fetchall()
 
-    return render_template("book.html", book=book, reviews=reviews)
+    db.commit()
+    if not reviews:
+        return apology("No reviews found" , 400)
+
+    return render_template("book.html", book=book, reviews=reviews , user_reviews = user_reviews)
 
 @app.route("/api/<int:isbn>")
 @login_required
 def api(isbn):
     """api"""
 
+    isbn = str(isbn)
+
+    book = db.execute("SELECT * FROM books WHERE isbn = :isbn",
+                        {"isbn": isbn}).fetchone()
+    db.commit()
     # Get all reviews and rating.
-    reviews = db.execute("SELECT books.*, AVG(reviews.rating) as avg_score , COUNT(*) as rev_count FROM books JOIN reviews ON books.book_id = reviews.book_id GROUP BY books.book_id HAVING books.isbn = :isbn",
-                            {"isbn": isbn}).fetchall()
+    reviews = db.execute("SELECT AVG(reviews.rating) as avg_score , COUNT(reviews.*) as rev_count FROM books JOIN reviews ON books.book_id = reviews.book_id WHERE books.isbn = :isbn GROUP BY reviews.book_id",
+                            {"isbn": isbn}).fetchone()
 
     db.commit()
 
     if not reviews:
         return apology(" No reviews found " , 404)
 
-    return jsonify(reviews)
+    d = dict(book.items())
+    d["average_score"] = reviews["avg_score"]
+    d["reviews_count"] = reviews["rev_count"]
+    return jsonify(d)
 
 @app.route("/submission", methods=["POST"])
 @login_required
@@ -222,14 +232,20 @@ def submission():
 
     user_id = session["user_id"]
 
-    book = db.execute("SELECT book_id FROM books where books.isbn = :isbn",
-                {"isbn": isbn})
+    book = db.execute("SELECT book_id FROM books WHERE isbn = :isbn",
+                {"isbn": isbn}).fetchone()
     db.commit()
 
-    db.execute("INSERT INTO reviews ( user_id , book_id , rating , review ) VALUES (:user_id , :book_id , :rating , :review )",
-            {"user_id": user_id, "book_id": book["book_id"] , rating: rating , review: review})
+    reviews = db.execute("SELECT * FROM reviews WHERE user_id = :user_id AND book_id = :book_id",
+                {"user_id": session["user_id"] , "book_id": book["book_id"]}).fetchall()
     db.commit()
-    return redirect("/")
+    if reviews == []:
+        db.execute("INSERT INTO reviews ( user_id , book_id , rating , review ) VALUES (:user_id , :book_id , :rating , :review )",
+                {"user_id": user_id, "book_id": book["book_id"] , "rating": float(rating) , "review": review})
+        db.commit()
+        return redirect("/")
+
+    return apology("You have already posted a review", 400)
 
 # listen for errors
 for code in default_exceptions:

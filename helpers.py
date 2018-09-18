@@ -1,12 +1,11 @@
-import requests
-import urllib.parse
 
 import requests
 from flask import redirect, render_template, request, session
 from functools import wraps
 
 #KEY
-KEY = "zOSQOHTiC6c4jodQmYVNrA"
+KEY = "v3M2y9O0fY6so6oqGoF4pA"
+SECRET = "jAZW9gZyUuCPbmsnEuih7Ktwb5f4NFMOdxUjXfOU"
 
 def apology(message, code=400):
     """Render message as an apology to user."""
@@ -42,7 +41,7 @@ def lookup(isbn):
 
     # Contact API
     try:
-        response = requests.get("https://www.goodreads.com/book/review_counts.json", params={"key": KEY, "isbn": isbn})
+        response = requests.get("https://www.goodreads.com/book/review_counts.json", params={"key": KEY, "isbns": isbn})
         response.raise_for_status()
     except requests.RequestException:
         return None
@@ -50,11 +49,10 @@ def lookup(isbn):
     # Parse response
     try:
         quote = response.json()
+        res = quote["books"][0]
         return {
-            "review_count": quote('work_ratings_count'),
-            "average_score": float(quote('average_rating'))
+            "review_count": res["work_ratings_count"],
+            "average_score": float(res["average_rating"])
         }
     except (KeyError, TypeError, ValueError):
         return None
-
-
