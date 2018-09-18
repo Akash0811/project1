@@ -1,0 +1,43 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Book
+{% endblock %}
+
+{% block body %}
+    <h1>Book Details</h1>
+
+    <ul>
+        <li>Title: {{ book.title }}</li>
+        <li>Author: {{ book.author }}</li>
+        <li>Year: {{ book.year}} </li>
+        <li>ISBN: {{ book.isbn }}</li>
+    </ul>
+
+    <h2>Reviews</h2>
+    <ul>
+        {% for item in reviews %}
+            <ul>
+            <li>{{ item.rating }}</li>
+            <li>{{ item.review }}</li>
+            </ul>
+        {% else %}
+            <li>No reviews.</li>
+        {% endfor %}
+    </ul>
+    <form action="/submission" method="post">
+        <div class="form-group">
+            <select class="form-control" name="isbn">
+                <option value="{{ book.isbn }}"></option>
+            </select>
+        </div>
+        <div class="form-group">
+            <input autocomplete="off" autofocus class="form-control" name="rating" placeholder="rating" type="number"/>
+        </div>
+        <div class="form-group">
+                <input autocomplete="off" autofocus class="form-control" name="review" placeholder="review" type="text"/>
+        </div>
+        <button class="btn btn-primary" type="submit">Submit Review</button>
+    </form>
+
+{% endblock %}

@@ -1,0 +1,47 @@
+
+<!DOCTYPE html>
+<html>
+
+
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>
+    Apology
+  </title>
+  <style>
+        .container {
+        position: relative;
+        text-align: center;
+        color: black;
+        }
+
+        /* Bottom text */
+        .bottom-left {
+        position: absolute;
+        font-size: 40px;
+        bottom: 10%;
+        left: 30%;
+        }
+
+        /* Top text */
+        .top-left {
+            position: absolute;
+            font-size: 40px;
+            top: 10%;
+            left: 50%;
+        }
+    </style>
+
+</head>
+
+<body>
+
+<div class="container">
+  <img src="/static/wojak.jpg" alt= "wojak" width="50%;">
+  <div class="top-left">{{ top }}</div>
+  <div class="bottom-left">{{ bottom }}</div>
+</div>
+
+</body>
+
+</html>
